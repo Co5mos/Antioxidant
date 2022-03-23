@@ -17,7 +17,7 @@ queryRepo
 */
 func (d *Database) queryRepo(repoName string) (bool, *model.Repo) {
 	repo := model.Repo{}
-	r := d.DB.Where("Name = ?", repoName).First(&repo)
+	r := d.DB.Where("full_name = ?", repoName).First(&repo)
 	if err := r.Error; err == nil {
 		log.Println("Query data got...", repoName)
 		return true, &repo
@@ -32,9 +32,9 @@ InsertRepo
 插入数据
 */
 func (d *Database) InsertRepo(repo *model.Repo) {
-	isQuery, _ := d.queryRepo(repo.Name)
+	isQuery, _ := d.queryRepo(repo.FullName)
 	if !isQuery {
-		log.Println("Insert repo...", repo.URL)
+		log.Println("Insert repo...", repo.HTMLURL)
 		d.DB.Create(repo)
 	}
 }
@@ -45,6 +45,6 @@ UpdateRepo
 */
 func (d *Database) UpdateRepo(repo *model.Repo, githubRepo *github.Repository) {
 	d.DB.Model(repo).Where(
-		"URL = ?", githubRepo.HTMLURL).Update("updated_at", githubRepo.UpdatedAt.String())
-	log.Println("Update Repo...", repo.Name)
+		"html_url = ?", githubRepo.HTMLURL).Update("pushed_at", githubRepo.PushedAt.String())
+	log.Println("Update Repo...", repo.FullName)
 }

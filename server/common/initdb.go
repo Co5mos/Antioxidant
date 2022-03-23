@@ -21,7 +21,7 @@ yaml2db
 */
 func (d *Database) yaml2db(repoURL string, rtype string) {
 	repoURLSplit := strings.Split(repoURL, "/")
-	repoName := repoURLSplit[len(repoURLSplit)-1]
+	repoName := repoURLSplit[len(repoURLSplit)-2] + "/" + repoURLSplit[len(repoURLSplit)-1]
 
 	// 判断库里是否存在
 	isQuery, repo := d.queryRepo(repoName)

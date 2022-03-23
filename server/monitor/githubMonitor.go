@@ -38,7 +38,7 @@ func StarRepo(token *common.ThirdPartyToken) {
 		r := repo.GetRepository()
 		fmt.Println(*r.Name)
 		fmt.Println(*r.URL)
-		fmt.Println(r.GetUpdatedAt())
+		fmt.Println(r.GetPushedAt())
 	}
 }
 

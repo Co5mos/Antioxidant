@@ -30,11 +30,11 @@ func (t *ThirdPartyToken) getGithubClient() (*github.Client, context.Context) {
 GetGithubRepoInfo
 查询仓库信息
 */
-func (t *ThirdPartyToken) GetGithubRepoInfo(repo string) *github.Repository {
+func (t *ThirdPartyToken) GetGithubRepoInfo(repoName string) *github.Repository {
 	client, ctx := t.getGithubClient()
 
 	searchOpt := github.SearchOptions{Sort: "stars"}
-	rs, _, err := client.Search.Repositories(ctx, repo, &searchOpt)
+	rs, _, err := client.Search.Repositories(ctx, repoName, &searchOpt)
 	if err != nil {
 		log.Println(err)
 	}

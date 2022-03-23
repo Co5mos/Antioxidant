@@ -15,11 +15,11 @@ Repo
 */
 type Repo struct {
 	gorm.Model
-	ID        uint   `gorm:"primaryKey"` // ID
-	Name      string // 仓库名称
-	RepoType  string // 仓库类型
-	URL       string // 仓库地址
-	UpdatedAt string // 更新时间
+	ID       uint   `gorm:"primaryKey"` // ID
+	FullName string // 仓库名称
+	RepoType string // 仓库类型
+	HTMLURL  string // 仓库地址
+	PushedAt string // 更新时间
 }
 
 /*
@@ -28,9 +28,9 @@ GenRepoData
 */
 func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string) {
 
-	timestamp := githubRepo.GetUpdatedAt()
-	r.Name = *githubRepo.Name
+	timestamp := githubRepo.GetPushedAt()
+	r.FullName = *githubRepo.FullName
 	r.RepoType = repoTypes
-	r.URL = *githubRepo.HTMLURL
-	r.UpdatedAt = timestamp.Time.String()
+	r.HTMLURL = *githubRepo.HTMLURL
+	r.PushedAt = timestamp.Time.String()
 }

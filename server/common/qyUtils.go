@@ -25,7 +25,7 @@ GenQyData
 func (a *ApiConfig) GenQyData(repo *model.Repo) *model.QyData {
 	data := model.QyData{
 		Msgtype: "text",
-		Text:    model.Text{Content: repo.URL},
+		Text:    model.Text{Content: repo.HTMLURL},
 	}
 	return &data
 }
@@ -39,11 +39,11 @@ func (a *ApiConfig) GenQyMdData(d *Database) (bool, *model.MdData) {
 	sendFlag := false
 	content := "# Github Repos Update:\n"
 	for _, repo := range d.Repos {
-		log.Println("Compare repo...", repo.Name)
-		githubRepo := d.Tokens.GetGithubRepoInfo(repo.Name)
+		log.Println("Compare repo...", repo.FullName)
+		githubRepo := d.Tokens.GetGithubRepoInfo(repo.FullName)
 		if githubRepo.Name != nil {
-			if repo.UpdatedAt != githubRepo.UpdatedAt.String() {
-				content = content + "* [" + repo.URL + "](" + repo.URL + ")\n"
+			if repo.PushedAt != githubRepo.PushedAt.String() {
+				content = content + "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
 
 				sendFlag = true
 
@@ -53,13 +53,14 @@ func (a *ApiConfig) GenQyMdData(d *Database) (bool, *model.MdData) {
 		}
 	}
 
-	text := model.Text{Content: content}
-	data := model.MdData{
-		Msgtype:  "markdown",
-		Markdown: text,
-	}
-
+	log.Println("Send Flag is ...", sendFlag)
 	if sendFlag {
+		text := model.Text{Content: content}
+		data := model.MdData{
+			Msgtype:  "markdown",
+			Markdown: text,
+		}
+
 		return sendFlag, &data
 	} else {
 		return sendFlag, nil
