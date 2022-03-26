@@ -47,14 +47,14 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) (bool, *model.MdData) {
 		}
 
 		switch {
-		case githubRepo.Name == nil:
+		case githubRepo == nil:
 			log.Println("No github repo...", repo.FullName)
 			break
 		case repo.PushedAt != githubRepo.PushedAt.String():
 			log.Println("Get new pushed...", repo.FullName)
 
 			// 拼接企微内容
-			newFiles := d.GithubService.GetGithubRepoPushedData(repo.FullName)
+			newFiles := d.GithubService.GetGithubRepoPushedData(repo.FullName, repo.PushedAt)
 			if newFiles != nil {
 				content += "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
 
@@ -67,6 +67,7 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) (bool, *model.MdData) {
 
 			// 更新时间
 			d.UpdateRepo(repo, githubRepo)
+			repo.PushedAt = githubRepo.PushedAt.String()
 		default:
 			log.Println("No pushed...", repo.FullName)
 		}

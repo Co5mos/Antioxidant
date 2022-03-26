@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -73,37 +74,41 @@ func (g *GithubService) GetRepoInfoByID(repoID int64) (bool, *github.Repository)
 GetGithubRepoPushedData
 获取 github repo 最新的 push 数据
 */
-func (g *GithubService) GetGithubRepoPushedData(repoFullName string) []*string {
+func (g *GithubService) GetGithubRepoPushedData(repoFullName, pushedAt string) []*string {
 	repoFullNameSplit := strings.Split(repoFullName, "/")
 	owner := repoFullNameSplit[len(repoFullNameSplit)-2]
 	repo := repoFullNameSplit[len(repoFullNameSplit)-1]
 
-	// 获取主分支
-	repoBranch, resp, err := g.Client.Repositories.GetBranch(*g.ctx, owner, repo, "master")
+	// 获取最新一次push的commits
+	since, err := time.Parse("2006-01-02 15:04:05", pushedAt)
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println("Github branch resp status code...", resp.StatusCode)
-
-	// 获取 commit sha
-	commitSHA := repoBranch.GetCommit().SHA
-
-	// 获取 commit files
-	repoCommit, resp, err := g.Client.Repositories.GetCommit(*g.ctx, owner, repo, *commitSHA)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println("Github commit resp status code...", resp.StatusCode)
-	repoCommitFiles := repoCommit.Files
+	commits, resp, err := g.Client.Repositories.ListCommits(*g.ctx, owner, repo, &github.CommitsListOptions{Since: since})
+	log.Println("Github commits resp status code...", resp.StatusCode)
 
 	var addedFiles []*string
-	for _, f := range repoCommitFiles {
-		// 添加文件
-		if *f.Status == "added" {
-			log.Println("New pushed file...", *f.Filename)
-			addedFiles = append(addedFiles, f.Filename)
+	for _, commit := range commits {
+		commitSHA := commit.SHA
+
+		// 获取 commit files
+		repoCommit, resp1, err1 := g.Client.Repositories.GetCommit(*g.ctx, owner, repo, *commitSHA)
+		if err1 != nil {
+			log.Println(err1)
 		}
+		log.Println("Github commit resp status code...", resp1.StatusCode)
+		repoCommitFiles := repoCommit.Files
+
+		for _, f := range repoCommitFiles {
+			// 添加文件
+			if *f.Status == "added" {
+				log.Println("New pushed file...", *f.Filename)
+				addedFiles = append(addedFiles, f.Filename)
+			}
+		}
+
 	}
+
 	return addedFiles
 }
 
