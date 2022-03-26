@@ -4,15 +4,14 @@ import (
 	"Antioxidant/server/common"
 	"Antioxidant/server/monitor"
 	"log"
-
-	"github.com/robfig/cron"
+	"sync"
 )
 
 func main() {
 	log.Println("Start Antioxidant...")
 
 	// github token
-	token := common.ThirdPartyToken{GithubToken: ""}
+	token := ""
 
 	// 企业微信 webhook
 	webhook := common.ApiConfig{
@@ -20,17 +19,23 @@ func main() {
 
 	// 初始化数据
 	log.Println("Init Data...")
-	d := common.Database{}
+	d := common.Database{
+		GithubService: &common.GithubService{
+			GithubToken: token,
+		},
+	}
 	d.ConnDB()
-	d.InitDB(&token)
+	d.GithubService.GetGithubClient()
+	d.InitDB()
 
-	// 定时
-	c := cron.New()
-	c.AddFunc("0 */1 * * * *", func() { // 每小时更新执行一次
-		// 比较数据
-		log.Println("Compare Data...")
-		monitor.CompareAllRepo(&d, &webhook)
-	})
-	c.Start()
-	select {}
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// 定时查询 github repo
+	go monitor.RunRepoMonitor(&d, &webhook, wg)
+
+	// 定时查询 github cve
+	go monitor.RunCVEMonitor(&d, &webhook, wg)
+
+	wg.Wait()
 }

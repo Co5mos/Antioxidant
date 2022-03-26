@@ -10,9 +10,11 @@ import (
 )
 
 type Database struct {
-	DB     *gorm.DB
-	Repos  []*model.Repo
-	Tokens *ThirdPartyToken
+	DB            *gorm.DB
+	Repos         []*model.Repo
+	Cves          []*model.CVE
+	GithubService *GithubService
+	CVEService    *CVEService
 }
 
 /*
@@ -21,13 +23,15 @@ yaml2db
 */
 func (d *Database) yaml2db(repoURL string, rtype string) {
 	repoURLSplit := strings.Split(repoURL, "/")
-	repoName := repoURLSplit[len(repoURLSplit)-2] + "/" + repoURLSplit[len(repoURLSplit)-1]
+	owner := repoURLSplit[len(repoURLSplit)-2]
+	repoName := repoURLSplit[len(repoURLSplit)-1]
+	repoFullName := owner + "/" + repoName
 
 	// 判断库里是否存在
-	isQuery, repo := d.queryRepo(repoName)
+	isQuery, repo := d.QueryRepo(repoFullName)
 	if !isQuery {
-		githubRepo := d.Tokens.GetGithubRepoInfo(repoName)
-		if githubRepo.Name != nil {
+		githubRepo := d.GithubService.GetGithubRepoInfo(owner, repoName)
+		if githubRepo != nil {
 			// 写入数据库
 			r := model.Repo{}
 			r.GenRepoData(githubRepo, rtype)
@@ -80,17 +84,22 @@ func (d *Database) ConnDB() {
 InitDB
 初始化数据库
 */
-func (d *Database) InitDB(tokens *ThirdPartyToken) {
+func (d *Database) InitDB() {
 
-	// 迁移文件
+	// 迁移文件，仓库表
 	if !d.DB.Migrator().HasTable(&model.Repo{}) {
 		log.Println("Create Repo Table...")
 		d.DB.Migrator().CreateTable(&model.Repo{})
 	}
 
+	if !d.DB.Migrator().HasTable(&model.CVE{}) {
+		log.Println("Create CVE Table...")
+		d.DB.Migrator().CreateTable(&model.CVE{})
+	}
+
 	// 检测表结构
 	d.DB.AutoMigrate(&model.Repo{})
-	d.Tokens = tokens
+	d.DB.AutoMigrate(&model.CVE{})
 
 	// 读取 yaml 文件
 	d.SaveYamlData()

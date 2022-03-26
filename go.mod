@@ -12,6 +12,9 @@ require (
 )
 
 require (
+	github.com/PuerkitoBio/goquery v1.8.0 // indirect
+	github.com/andybalholm/cascadia v1.3.1 // indirect
+	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

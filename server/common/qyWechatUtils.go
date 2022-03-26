@@ -3,6 +3,7 @@ package common
 import (
 	"Antioxidant/server/model"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,29 +32,76 @@ func (a *ApiConfig) GenQyData(repo *model.Repo) *model.QyData {
 }
 
 /*
-GenQyMdData
+GenRepoQyMdData
 生成 Markdown 格式数据
 */
-func (a *ApiConfig) GenQyMdData(d *Database) (bool, *model.MdData) {
+func (a *ApiConfig) GenRepoQyMdData(d *Database) (bool, *model.MdData) {
 
 	sendFlag := false
 	content := "# Github Repos Update:\n"
 	for _, repo := range d.Repos {
 		log.Println("Compare repo...", repo.FullName)
-		githubRepo := d.Tokens.GetGithubRepoInfo(repo.FullName)
-		if githubRepo.Name != nil {
-			if repo.PushedAt != githubRepo.PushedAt.String() {
-				content = content + "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
+		isGet, githubRepo := d.GithubService.GetRepoInfoByID(repo.RepoID)
+		if !isGet {
+			continue
+		}
+
+		switch {
+		case githubRepo.Name == nil:
+			log.Println("No github repo...", repo.FullName)
+			break
+		case repo.PushedAt != githubRepo.PushedAt.String():
+			log.Println("Get new pushed...", repo.FullName)
+
+			// 拼接企微内容
+			newFiles := d.GithubService.GetGithubRepoPushedData(repo.FullName)
+			if newFiles != nil {
+				content += "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
+
+				for i, f := range newFiles {
+					content += fmt.Sprintf("      %d. %s\n", i+1, *f)
+				}
 
 				sendFlag = true
-
-				// 更新时间
-				d.UpdateRepo(repo, githubRepo)
 			}
+
+			// 更新时间
+			d.UpdateRepo(repo, githubRepo)
+		default:
+			log.Println("No pushed...", repo.FullName)
 		}
 	}
 
 	log.Println("Send Flag is ...", sendFlag)
+	if sendFlag {
+		text := model.Text{Content: content}
+		data := model.MdData{
+			Msgtype:  "markdown",
+			Markdown: text,
+		}
+
+		return sendFlag, &data
+	} else {
+		return sendFlag, nil
+	}
+}
+
+/*
+GenCveData
+生成 cve 数据
+*/
+func (a *ApiConfig) GenCveData(cves []*model.CVE) (bool, *model.MdData) {
+
+	sendFlag := false
+	content := "# 你有新的CVE，请注意查收: \n\n"
+
+	for _, cve := range cves {
+		content += "## " + cve.CveID + "\n"
+		content += "  " + *cve.Desc + "\n"
+
+		sendFlag = true
+	}
+
 	if sendFlag {
 		text := model.Text{Content: content}
 		data := model.MdData{
