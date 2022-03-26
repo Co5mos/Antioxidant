@@ -16,6 +16,7 @@ Repo
 type Repo struct {
 	gorm.Model
 	ID       uint   `gorm:"primaryKey"` // ID
+	RepoID   int64  // 仓库 ID
 	FullName string // 仓库名称
 	RepoType string // 仓库类型
 	HTMLURL  string // 仓库地址
@@ -29,6 +30,7 @@ GenRepoData
 func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string) {
 
 	timestamp := githubRepo.GetPushedAt()
+	r.RepoID = *githubRepo.ID
 	r.FullName = *githubRepo.FullName
 	r.RepoType = repoTypes
 	r.HTMLURL = *githubRepo.HTMLURL
