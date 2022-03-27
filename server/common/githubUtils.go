@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -71,13 +70,27 @@ func (g *GithubService) GetRepoInfoByID(repoID int64) (bool, *github.Repository)
 }
 
 /*
+GetLastCommitDatetime
+获取最新一次master分支的commit时间
+*/
+func (g *GithubService) GetLastCommitDatetime(owner, repo string) time.Time {
+	branch, resp, err := g.Client.Repositories.GetBranch(*g.ctx, owner, repo, "master")
+	if err != nil {
+		log.Println("Get branch failed...", fmt.Sprintf("%s/%s", owner, repo))
+	}
+
+	log.Println("Get branch success...", resp.StatusCode)
+	datetime := branch.GetCommit().Commit.Author.GetDate()
+	newTime := datetime.Add(1 * time.Second)
+
+	return newTime
+}
+
+/*
 GetGithubRepoPushedData
 获取 github repo 最新的 push 数据
 */
-func (g *GithubService) GetGithubRepoPushedData(repoFullName, pushedAt string) []*string {
-	repoFullNameSplit := strings.Split(repoFullName, "/")
-	owner := repoFullNameSplit[len(repoFullNameSplit)-2]
-	repo := repoFullNameSplit[len(repoFullNameSplit)-1]
+func (g *GithubService) GetGithubRepoPushedData(owner, repo, pushedAt string) []*string {
 
 	// 获取最新一次push的commits
 	since, err := time.Parse("2006-01-02 15:04:05", pushedAt)
@@ -106,7 +119,6 @@ func (g *GithubService) GetGithubRepoPushedData(repoFullName, pushedAt string) [
 				addedFiles = append(addedFiles, f.Filename)
 			}
 		}
-
 	}
 
 	return addedFiles

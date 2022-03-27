@@ -4,5 +4,6 @@ vuln:
   - https://github.com/Mr-xn/Penetration_Testing_POC
   - https://github.com/cckuailong/reapoc
   - https://github.com/EdgeSecurityTeam/Vulnerability
+  - https://github.com/swisskyrepo/PayloadsAllTheThings
 tool:
   - https://github.com/frohoff/ysoserial

@@ -3,7 +3,6 @@ package common
 import (
 	"Antioxidant/server/model"
 	"log"
-	"time"
 
 	"github.com/google/go-github/github"
 )
@@ -44,10 +43,10 @@ func (d *Database) InsertRepo(repo *model.Repo) {
 UpdateRepo
 更新repo
 */
-func (d *Database) UpdateRepo(repo *model.Repo, githubRepo *github.Repository) {
+func (d *Database) UpdateRepo(repo *model.Repo, githubRepo *github.Repository, pushedAt string) {
 	d.DB.Model(repo).Where(
 		"html_url = ?", githubRepo.HTMLURL).Update(
-		"pushed_at", githubRepo.PushedAt.Add(8*time.Hour).String())
+		"pushed_at", pushedAt)
 	log.Println("Update Repo...", repo.FullName)
 }
 

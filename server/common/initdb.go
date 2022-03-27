@@ -34,7 +34,9 @@ func (d *Database) yaml2db(repoURL string, rtype string) {
 		if githubRepo != nil {
 			// 写入数据库
 			r := model.Repo{}
-			r.GenRepoData(githubRepo, rtype)
+			// 获取最新一次commit的时间
+			commitTime := d.GithubService.GetLastCommitDatetime(owner, repoName)
+			r.GenRepoData(githubRepo, rtype, commitTime)
 			d.Repos = append(d.Repos, &r)
 			d.InsertRepo(&r)
 		} else {

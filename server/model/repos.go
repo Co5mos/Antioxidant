@@ -29,13 +29,11 @@ type Repo struct {
 GenRepoData
 生成Repo数据
 */
-func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string) {
+func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string, commitTime time.Time) {
 
-	timestamp := githubRepo.GetPushedAt()
-	pushedAt := timestamp.Time.Add(8 * time.Hour)
 	r.RepoID = *githubRepo.ID
 	r.FullName = *githubRepo.FullName
 	r.RepoType = repoTypes
 	r.HTMLURL = *githubRepo.HTMLURL
-	r.PushedAt = pushedAt.String()
+	r.PushedAt = commitTime.String()
 }

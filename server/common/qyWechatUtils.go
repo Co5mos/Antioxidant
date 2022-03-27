@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 /**
@@ -42,13 +41,19 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) {
 		sendFlag := false
 		content := "# Github Repos Update:\n"
 
+		repoFullNameSplit := strings.Split(repo.FullName, "/")
+		owner := repoFullNameSplit[len(repoFullNameSplit)-2]
+		repoName := repoFullNameSplit[len(repoFullNameSplit)-1]
+
+		// 通过id获取github repo
 		log.Println("Compare repo...", repo.FullName)
 		isGet, githubRepo := d.GithubService.GetRepoInfoByID(repo.RepoID)
 		if !isGet {
 			continue
 		}
 
-		pushedAt := githubRepo.PushedAt.Add(8 * time.Hour)
+		// 获取推送时间
+		pushedAt := d.GithubService.GetLastCommitDatetime(owner, repoName).String()
 		log.Println("Github repo pushed at...", pushedAt)
 		log.Println("DB repo pushed at...", repo.PushedAt)
 
@@ -56,11 +61,11 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) {
 		case githubRepo == nil:
 			log.Println("No github repo...", repo.FullName)
 			break
-		case repo.PushedAt != pushedAt.String():
+		case repo.PushedAt != pushedAt:
 			log.Println("Get new pushed...", repo.FullName)
 
 			// 拼接企微内容
-			newFiles := d.GithubService.GetGithubRepoPushedData(repo.FullName, repo.PushedAt)
+			newFiles := d.GithubService.GetGithubRepoPushedData(owner, repoName, repo.PushedAt)
 			if newFiles != nil {
 				content += "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
 
@@ -72,8 +77,8 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) {
 			}
 
 			// 更新时间
-			d.UpdateRepo(repo, githubRepo)
-			//repo.PushedAt = pushedAt.String()
+			d.UpdateRepo(repo, githubRepo, pushedAt)
+			repo.PushedAt = pushedAt
 		default:
 			log.Println("No pushed...", repo.FullName)
 		}
