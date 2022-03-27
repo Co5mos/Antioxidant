@@ -3,6 +3,7 @@ package common
 import (
 	"Antioxidant/server/model"
 	"log"
+	"time"
 
 	"github.com/google/go-github/github"
 )
@@ -45,7 +46,8 @@ UpdateRepo
 */
 func (d *Database) UpdateRepo(repo *model.Repo, githubRepo *github.Repository) {
 	d.DB.Model(repo).Where(
-		"html_url = ?", githubRepo.HTMLURL).Update("pushed_at", githubRepo.PushedAt.String())
+		"html_url = ?", githubRepo.HTMLURL).Update(
+		"pushed_at", githubRepo.PushedAt.Add(8*time.Hour).String())
 	log.Println("Update Repo...", repo.FullName)
 }
 
@@ -60,7 +62,7 @@ func (d *Database) QueryCve(cveID string) (bool, *model.CVE) {
 		log.Println("Query data got...", cveID)
 		return true, cve
 	} else {
-		log.Println("No query data...")
+		log.Println("No query data...", cveID)
 		return false, nil
 	}
 }

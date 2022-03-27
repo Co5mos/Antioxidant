@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 /**
@@ -35,22 +36,27 @@ func (a *ApiConfig) GenQyData(repo *model.Repo) *model.QyData {
 GenRepoQyMdData
 生成 Markdown 格式数据
 */
-func (a *ApiConfig) GenRepoQyMdData(d *Database) (bool, *model.MdData) {
+func (a *ApiConfig) GenRepoQyMdData(d *Database) {
 
-	sendFlag := false
-	content := "# Github Repos Update:\n"
 	for _, repo := range d.Repos {
+		sendFlag := false
+		content := "# Github Repos Update:\n"
+
 		log.Println("Compare repo...", repo.FullName)
 		isGet, githubRepo := d.GithubService.GetRepoInfoByID(repo.RepoID)
 		if !isGet {
 			continue
 		}
 
+		pushedAt := githubRepo.PushedAt.Add(8 * time.Hour)
+		log.Println("Github repo pushed at...", pushedAt)
+		log.Println("DB repo pushed at...", repo.PushedAt)
+
 		switch {
 		case githubRepo == nil:
 			log.Println("No github repo...", repo.FullName)
 			break
-		case repo.PushedAt != githubRepo.PushedAt.String():
+		case repo.PushedAt != pushedAt.String():
 			log.Println("Get new pushed...", repo.FullName)
 
 			// 拼接企微内容
@@ -67,23 +73,20 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) (bool, *model.MdData) {
 
 			// 更新时间
 			d.UpdateRepo(repo, githubRepo)
-			repo.PushedAt = githubRepo.PushedAt.String()
+			//repo.PushedAt = pushedAt.String()
 		default:
 			log.Println("No pushed...", repo.FullName)
 		}
-	}
 
-	log.Println("Send Flag is ...", sendFlag)
-	if sendFlag {
-		text := model.Text{Content: content}
-		data := model.MdData{
-			Msgtype:  "markdown",
-			Markdown: text,
+		log.Println("Send Flag is ...", sendFlag)
+		if sendFlag {
+			text := model.Text{Content: content}
+			data := model.MdData{
+				Msgtype:  "markdown",
+				Markdown: text,
+			}
+			a.SendData2QY(&data)
 		}
-
-		return sendFlag, &data
-	} else {
-		return sendFlag, nil
 	}
 }
 

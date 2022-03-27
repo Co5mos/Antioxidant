@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/google/go-github/github"
 	"gorm.io/gorm"
 )
@@ -30,9 +32,10 @@ GenRepoData
 func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string) {
 
 	timestamp := githubRepo.GetPushedAt()
+	pushedAt := timestamp.Time.Add(8 * time.Hour)
 	r.RepoID = *githubRepo.ID
 	r.FullName = *githubRepo.FullName
 	r.RepoType = repoTypes
 	r.HTMLURL = *githubRepo.HTMLURL
-	r.PushedAt = timestamp.Time.String()
+	r.PushedAt = pushedAt.String()
 }

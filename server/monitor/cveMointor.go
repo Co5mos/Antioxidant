@@ -45,6 +45,7 @@ func RunCVEMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) {
 		var cves []*model.CVE
 		cs := common.CVEService{}
 		today := time.Now().Format("2006-01-02")
+		log.Println("Today is ...", today)
 		sendFlag := false
 		content := "# 你有新的CVE，请注意查收: \n\n"
 
@@ -63,7 +64,6 @@ func RunCVEMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) {
 				continue
 			}
 
-			// 官网查询CVE正确性
 			cveID := cveIDs[0][0]
 			// 查询数据库中是否已经存在该CVE
 			isQuery, err := d.QueryCve(cveID)
@@ -71,7 +71,9 @@ func RunCVEMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) {
 				continue
 			}
 
-			pushedAt := repo.PushedAt.Format("2006-01-02")
+			// 官网查询CVE正确性
+			pushedAt := repo.PushedAt.Add(8 * time.Hour).Format("2006-01-02")
+			log.Println("CVE repo pushed at...", pushedAt)
 			if pushedAt == today {
 				isCve, cveDesc := cs.GetCVEFromOrg(cveIDs[0][0])
 				if !isCve {
@@ -91,7 +93,7 @@ func RunCVEMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) {
 
 				// 组织发送数据
 				content += "## " + cve.CveID + "\n"
-				content += fmt.Sprintf("[%s](%s)", cve.URL, cve.URL)
+				content += fmt.Sprintf("[%s](%s)", cve.URL, cve.URL) + "\n"
 				content += "> " + *cve.Desc + "\n"
 
 				sendFlag = true

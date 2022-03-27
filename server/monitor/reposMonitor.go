@@ -25,12 +25,8 @@ func RunRepoMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) 
 		// 比较数据
 		log.Println("Compare Data...")
 
-		//  获取 github repo 信息
-		sendFlag, data := a.GenRepoQyMdData(d)
-		if sendFlag {
-			log.Println("Send Qy data...")
-			a.SendData2QY(data)
-		}
+		//  获取 github repo 并发送信息
+		a.GenRepoQyMdData(d)
 	})
 	c1.Start()
 	select {}
