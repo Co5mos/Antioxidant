@@ -15,3 +15,12 @@ ThirdPartyToken
 type ThirdPartyToken struct {
 	GithubToken string // github token
 }
+
+/*
+AntioxidantConfig
+配置文件
+*/
+type AntioxidantConfig struct {
+	QyWechat    string `yaml:"QyWechat"`    // 企微 webhook api
+	GithubToken string `yaml:"GithubToken"` // github token
+}

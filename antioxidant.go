@@ -3,6 +3,7 @@ package main
 import (
 	"Antioxidant/server/common"
 	"Antioxidant/server/monitor"
+	"fmt"
 	"log"
 	"sync"
 )
@@ -10,18 +11,19 @@ import (
 func main() {
 	log.Println("Start Antioxidant...")
 
-	// github token
-	token := ""
+	ac, err := common.ReadConfig("./config.yaml")
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	// 企业微信 webhook
-	webhook := common.ApiConfig{
-		QyWebhook: ""}
+	webhook := common.ApiConfig{QyWebhook: ac.QyWechat}
 
 	// 初始化数据
 	log.Println("Init Data...")
 	d := common.Database{
 		GithubService: &common.GithubService{
-			GithubToken: token,
+			GithubToken: ac.GithubToken,
 		},
 	}
 	d.ConnDB()

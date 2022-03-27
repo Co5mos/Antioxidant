@@ -15,6 +15,6 @@
 
 # 使用
 
-1. 修改 antioxidant.go 的15行 github token，18行的企业微信 webhook api。
+1. 修改 config.yaml 中的 github token 和 webhook api。
 2. 修改 repos/Repos.yaml 中想要监控的仓库。
 3. 运行。

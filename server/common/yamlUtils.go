@@ -30,3 +30,22 @@ func ReadYaml(filename string) (*model.RepoURLs, error) {
 	}
 	return &repos, nil
 }
+
+/*
+ReadConfig
+读取配置文件
+*/
+func ReadConfig(filename string) (*AntioxidantConfig, error) {
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var ac AntioxidantConfig
+
+	err = yaml.Unmarshal(buf, &ac)
+	if err != nil {
+		return nil, fmt.Errorf("in file %q: %v", filename, err)
+	}
+	return &ac, nil
+}
