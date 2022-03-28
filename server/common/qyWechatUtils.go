@@ -65,7 +65,9 @@ func (a *ApiConfig) GenRepoQyMdData(d *Database) {
 			log.Println("Get new pushed...", repo.FullName)
 
 			// 拼接企微内容
-			newFiles := d.GithubService.GetGithubRepoPushedData(owner, repoName, repo.PushedAt)
+			l := strings.Split(repo.PushedAt, " ")
+			commitAd := l[0] + " " + l[1]
+			newFiles := d.GithubService.GetGithubRepoPushedData(owner, repoName, commitAd)
 			if newFiles != nil {
 				content += "[" + repo.HTMLURL + "](" + repo.HTMLURL + ")\n"
 
