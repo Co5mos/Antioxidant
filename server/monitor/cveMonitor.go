@@ -27,7 +27,7 @@ func RunCVEMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) {
 
 	// 定时操作
 	c := cron.New()
-	c.AddFunc("0 */1 * * * *", func() {
+	c.AddFunc("0 */10 * * * *", func() {
 		log.Println("Get cve info...")
 
 		// 初始化操作

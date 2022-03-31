@@ -94,14 +94,22 @@ func (d *Database) InitDB() {
 		d.DB.Migrator().CreateTable(&model.Repo{})
 	}
 
+	// cve 表
 	if !d.DB.Migrator().HasTable(&model.CVE{}) {
 		log.Println("Create CVE Table...")
 		d.DB.Migrator().CreateTable(&model.CVE{})
 	}
 
+	// 热点漏洞表
+	if !d.DB.Migrator().HasTable(&model.HotVuln{}) {
+		log.Println("Create Hot Vuln Table...")
+		d.DB.Migrator().CreateTable(&model.HotVuln{})
+	}
+
 	// 检测表结构
 	d.DB.AutoMigrate(&model.Repo{})
 	d.DB.AutoMigrate(&model.CVE{})
+	d.DB.AutoMigrate(&model.HotVuln{})
 
 	// 读取 yaml 文件
 	d.SaveYamlData()

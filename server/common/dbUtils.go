@@ -77,3 +77,31 @@ func (d *Database) InsertCve(cve *model.CVE) {
 		d.DB.Create(cve)
 	}
 }
+
+/*
+QueryHotVuln
+查询
+*/
+func (d *Database) QueryHotVuln(repoID int64) (bool, *model.HotVuln) {
+	hotVuln := &model.HotVuln{}
+	r := d.DB.Where("repo_id = ?", repoID).First(hotVuln)
+	if err := r.Error; err == nil {
+		log.Println("Query data got...", repoID)
+		return true, hotVuln
+	} else {
+		log.Println("No query data...", repoID)
+		return false, nil
+	}
+}
+
+/*
+InsertHotVuln
+插入数据
+*/
+func (d *Database) InsertHotVuln(hotVuln *model.HotVuln) {
+	isQuery, _ := d.QueryHotVuln(hotVuln.RepoID)
+	if !isQuery {
+		log.Println("Insert repo...", hotVuln.HTMLURL)
+		d.DB.Create(hotVuln)
+	}
+}

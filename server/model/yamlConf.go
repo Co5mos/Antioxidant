@@ -8,3 +8,7 @@ type RepoURLs struct {
 	Vuln []string
 	Tool []string
 }
+
+type HotKeys struct {
+	Keywords []string
+}

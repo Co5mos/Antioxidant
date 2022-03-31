@@ -49,3 +49,22 @@ func ReadConfig(filename string) (*AntioxidantConfig, error) {
 	}
 	return &ac, nil
 }
+
+/*
+ReadHotVuln
+读取热点漏洞关键字
+*/
+func ReadHotVuln(filename string) (*model.HotKeys, error) {
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var h model.HotKeys
+
+	err = yaml.Unmarshal(buf, &h)
+	if err != nil {
+		return nil, fmt.Errorf("in file %q: %v", filename, err)
+	}
+	return &h, nil
+}

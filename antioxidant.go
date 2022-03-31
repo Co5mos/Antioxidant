@@ -31,13 +31,16 @@ func main() {
 	d.InitDB()
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	// 定时查询 github repo
 	go monitor.RunRepoMonitor(&d, &webhook, wg)
 
 	// 定时查询 github cve
 	go monitor.RunCVEMonitor(&d, &webhook, wg)
+
+	// 定时查询 热点漏洞
+	go monitor.RunHotVulnMonitor(&d, &webhook, wg)
 
 	wg.Wait()
 }

@@ -26,6 +26,20 @@ type Repo struct {
 }
 
 /*
+HotVuln
+热点漏洞
+*/
+type HotVuln struct {
+	gorm.Model
+	ID       uint   `gorm:"primaryKey"` // ID
+	HotKey   string // 热词
+	RepoID   int64  // 仓库 ID
+	FullName string // 仓库名称
+	HTMLURL  string // 仓库地址
+	CommitAt string // 更新时间
+}
+
+/*
 GenRepoData
 生成Repo数据
 */
@@ -36,4 +50,17 @@ func (r *Repo) GenRepoData(githubRepo *github.Repository, repoTypes string, comm
 	r.RepoType = repoTypes
 	r.HTMLURL = *githubRepo.HTMLURL
 	r.PushedAt = commitTime.String()
+}
+
+/*
+GenHotVulnData
+生成热点漏洞数据
+*/
+func (h *HotVuln) GenHotVulnData(githubRepo *github.Repository, hotKey string, commitTime time.Time) {
+
+	h.RepoID = *githubRepo.ID
+	h.HotKey = hotKey
+	h.FullName = *githubRepo.FullName
+	h.HTMLURL = *githubRepo.HTMLURL
+	h.CommitAt = commitTime.String()
 }

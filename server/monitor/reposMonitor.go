@@ -20,14 +20,13 @@ func RunRepoMonitor(d *common.Database, a *common.ApiConfig, wg sync.WaitGroup) 
 	// 定时查询 github repo
 	wg.Done()
 
-	c1 := cron.New()
-	c1.AddFunc("0 */1 * * * *", func() { // 每小时更新执行一次
-		// 比较数据
+	c := cron.New()
+	c.AddFunc("0 */10 * * * *", func() { // 每小时更新执行一次
 		log.Println("Compare Data...")
 
 		//  获取 github repo 并发送信息
 		a.GenRepoQyMdData(d)
 	})
-	c1.Start()
+	c.Start()
 	select {}
 }
